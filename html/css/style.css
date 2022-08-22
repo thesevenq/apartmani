@@ -1,0 +1,204 @@
+@font-face {
+    font-family: 'Forza';
+    src: url('../fonts/Forza-Black.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'ForzaBold';
+    src: url('../fonts/Forza-Bold.ttf') format('truetype');
+    font-weight: bold;
+}
+
+@font-face {
+    font-family: 'ForzaLajt';
+    src: url('../fonts/Forza-Light.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'ForzaMed';
+    src: url('../fonts/Forza-Medium.ttf') format('truetype');
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: 'Forza';
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+  }
+   
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #dc143c; 
+  }
+  
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #1a223a; 
+  }
+
+#container {
+    display: none;
+    width: 1280px;
+    height: 660px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background: linear-gradient(to left, #3a3a3af8, #3a3a3aea), url(https://wallpaperaccess.com/full/3428513.jpg) no-repeat top center;
+    border-radius: 10px;
+}
+
+#headermrtvi{
+    height: 17%;
+    width: 100%;
+    background-color: #ffffff;
+}
+
+#naslov{
+    font-family: "Forza";
+    color: black;
+    font-size: 30px;
+    margin-left: 3%;
+    padding-top: 2.5%;
+}
+
+#naslovsub{
+    font-family: "ForzaMed";
+    color: rgb(175, 175, 175);
+    font-size: 15px;
+    margin-left: 3%;
+}
+
+#apartmanbtn{
+    font-size: 18px;
+    color: white;
+    padding: 15px 50px;
+    background-color: #dc143c;
+    position: absolute;
+    right: 3%;
+    top: 4.5%;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+#apartmanbtn:hover {
+    background-color: black;
+}
+
+
+#lista-container{
+    position: absolute;
+    width: 19%;
+    height: 70%;
+    transform: translate(-50%, -50%);
+    left: 11%;
+    top: 55%;
+    overflow:auto;
+}
+
+.lista-karta {
+    width: auto;
+    height: auto;
+    background-color: #ffffff;
+    border: solid white 2px;
+    font-size: 20px;
+    padding: 1vh;
+    margin-top: 2%;
+    margin: 2%;
+    color: black;
+    font-weight: bold;
+}
+
+.lista-karta:hover {
+    background-color: #dc143c;
+    box-shadow: 10px 10px 85px 0px #dc143c;
+}  
+
+.pic-container {
+    width: 30%;
+    height: 70%;
+    margin-top: 6%;
+    margin-left: 25%;
+}
+
+.pic-container img {
+    display: block;
+    width: auto;
+    min-width: 400px;
+    max-width: 500px;
+    height: auto;
+}
+
+#informacije{
+    position: absolute;
+    width: 30%;
+    height: 70%;
+    top: 23%;
+    left: 65%;
+}
+
+#imeapartmana{
+    font-family: "Forza";
+    color: white;
+    font-size: 30px;
+    text-align: center;
+    padding-top: 5%;
+}
+
+#storagesize, #nadogradnjah, #cijenah{
+    font-family: "ForzaMed";
+    color: rgb(255, 255, 255);
+    font-size: 12px;
+    margin-top: 3%;
+    text-align: center;
+}
+
+#storage, #nadogradnja, #cijena{
+    font-family: "Forza";
+    color: rgb(255, 255, 255);
+    font-size: 20px;
+    margin-top: 1%;
+    text-align: center;
+}
+
+#kupi{
+    font-size: 18px;
+    color: white;
+    padding: 15px 50px;
+    background-color: #dc143c;
+    position: absolute;
+    right: 9%;
+    top: 58%;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+#kupi:hover {
+    background-color: black;
+}
+
+.eye-right {
+    font-size:150%;
+    transition: color .10s;
+}
+
+.eye-right:hover {
+    color:rgb(64, 67, 255);
+}
+
+.right {
+    position: absolute;
+    right: 2%;
+    font-size:150%;
+}
+
