@@ -1,15 +1,171 @@
-local CT = CreateThread
-local TE = TriggerEvent
-local TSE = TriggerServerEvent
-
 local unutra = false
+local listaUnutra = {}
 
-function hint(tipka, tekst)
-  TE('notif:hint', tipka, tekst)
-end
+RegisterNetEvent("apartmani:otvoriMeni", function()
+  SetTimecycleModifier('hud_def_blur') -- blur
+  SendNUIMessage({action = "open", apartmani = GlobalState.Apartmani})
+  SetNuiFocus(true, true)
+end)
 
+CreateThread(function()
+  for id,data in pairs(GlobalState.Apartmani) do
+    exports['qtarget']:AddCircleZone('apartman_' .. id, data.ulazak, 1.5, {
+      name = 'apartman_' .. id,
+      debugPoly = false,
+      useZ = true,
+    }, {
+      options = {
+        {
+          icon = "fas fa-sign-in-alt",
+          label = "Pristupi Apartmanu",
+          action = function()
+            TriggerEvent('apartmani:pristupiApartmanu', data)
+          end
+        },
+        {
+          icon = "fas fa-sign-in-alt",
+          label = "Raidajte Apartman",
+          action = function()
+            TriggerEvent('apartmani:policijaRaidMeni', data)
+          end
+        },
+      },
+      distance = 2.0,
+    })
 
-CT(function()
+    exports['qtarget']:AddCircleZone('apartmanIzlazak_' .. id, data.izlazak, 1.5, {
+      name = 'apartmanIzlazak_' .. id,
+      debugPoly = false,
+      useZ = true,
+    }, {
+      options = {
+        {
+          icon = "fas fa-sign-in-alt",
+          label = "Napusti Apartman",
+          action = function()
+            TriggerEvent('apartmani:napustiApartman', data)
+          end
+        },
+      },
+      distance = 2.0,
+    })
+
+    exports['qtarget']:AddCircleZone('apartmanstash_' .. id, data.stash, 1.5, {
+      name = 'apartmanstash_' .. id,
+      debugPoly = false,
+      useZ = true,
+    }, {
+      options = {
+        {
+          icon = "fas fa-box",
+          label = "Pristupi Ostavi",
+          action = function()
+            TriggerEvent('apartmani:otvoriStash')
+          end
+        },
+      },
+      distance = 2.0,
+    })
+  end
+end)
+
+RegisterNetEvent('apartmani:policijaRaidMeni', function(apartmanData)
+    local opcije = {}
+    local menu_podaci = {}
+
+    for id,data in pairs(listaUnutra) do
+      if data.apartman == apartmanData.ime then
+        table.insert(menu_podaci, data)
+      end
+    end
+
+    for id,data in pairs(menu_podaci) do
+      table.insert(opcije, {
+        title = 'ID Apartmana: ' .. data.id, 
+        event = 'apartmani:raidApartman',
+        description = 'Pritisnite da raidate ovaj apartman!',
+        args = {id = data.id, apartmanData = apartmanData},
+        icon = 'fas fa-house'
+      })
+    end
+
+    lib.registerContext({
+        id = 'apartmani-lista',
+        title = 'Lista Apartmana',
+        options = opcije
+    })
+
+    lib.showContext('apartmani-lista')
+end)
+
+RegisterNetEvent('apartmani:raidApartman', function(data)
+  DoScreenFadeOut(300)
+  TriggerServerEvent('apartmani:napraviBucket', data.id)
+  Wait(2300)
+  SetEntityCoords(PlayerPedId(), data.apartmanData.izlazak, 0, 0, 0, false)
+  DoScreenFadeIn(300)
+end)
+
+RegisterNetEvent('apartmani:pristupiApartmanu', function(apartmanData)
+  ESX.TriggerServerCallback('apartmani:getajApartman', function(callbackData) 
+    if callbackData == apartmanData.ime then
+      local id = GetPlayerServerId(NetworkGetEntityOwner(PlayerPedId()))
+      unutra = true
+      DoScreenFadeOut(300)
+      TriggerServerEvent('apartmani:napraviBucket', id)
+      Wait(2300)
+      SetEntityCoords(PlayerPedId(), apartmanData.izlazak, 0, 0, 0, false)
+      DoScreenFadeIn(300)
+
+      table.insert(listaUnutra, {
+        apartman = apartmanData.ime, 
+        id = id,
+        vlasnik = LocalPlayer.state.identifikacija
+      })
+    else
+      ESX.ShowNotification('Moras kupiti ovaj apartman da bi mu pristupio!')
+    end
+  end)
+end)
+
+RegisterNetEvent('apartmani:napustiApartman', function(apartmanData)
+  local id = GetPlayerServerId(NetworkGetEntityOwner(PlayerPedId()))
+  unutra = false
+  DoScreenFadeOut(300)
+  TriggerServerEvent('apartmani:resetujBucket')
+  Wait(2300)
+  SetEntityCoords(PlayerPedId(), apartmanData.ulazak, 0, 0, 0, false)
+  DoScreenFadeIn(450) 
+end)
+
+RegisterNUICallback('kupiApartman', function(data)
+  TriggerServerEvent('apartmani:kupiApartman', data.ime, data.cijena)
+end)
+
+RegisterNUICallback('close', function(data)
+  SetTimecycleModifier('default') 
+  SetNuiFocus(false, false)
+end)
+
+RegisterNetEvent('apartmani:izadji', function ()
+  unutra = false
+  DoScreenFadeOut(300)
+  TSE('apartmani:resetujBucket')
+  Wait(2300)
+  SetEntityCoords(PlayerPedId(), -776.5603, 316.75546, 85.662643, 0, 0, 0, false)
+  DoScreenFadeIn(450)  
+
+end)
+
+RegisterNetEvent('apartmani:otvoriStash', function ()
+  TriggerEvent('ox_inventory:openInventory', 'stash', {id=LocalPlayer.state.identifikacija, owner = true})
+end)
+
+AddEventHandler('onResourceStop', function(resource)
+  TriggerServerEvent('apartmani:resetujBucket')
+end)
+
+CreateThread(function()
   for k,v in pairs(GlobalState.Apartmani) do
     local blip = AddBlipForCoord(v.ulazak)
     SetBlipSprite(blip, 475)
@@ -24,166 +180,9 @@ CT(function()
   end
 
   Wait(2000)
-  TSE("registrujstashove")
+  TriggerServerEvent("apartmani:registrujStashove")
 end)
 
-CT(function()
-  while true do
-    Wait(1)
-    local spavanac = true
-    local playerPed = PlayerPedId()
-    local korde = GetEntityCoords(playerPed)
-
-    for i = 1, #GlobalState.Apartmani do
-
-      if crta then
-        DrawMarker(30, GlobalState.Apartmani[i].ulazak, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, 50, 112, 207, 155, false, false, 2, false, false, false, false)
-      end
-
-      distanca = GetDistanceBetweenCoords(korde, GlobalState.Apartmani[i].ulazak, true)
-      if distanca <= 10.0 and distanca >= 2.0 then
-        spavanac = false
-        crta = true
-      elseif distanca <= 5 then
-        spavanac = false
-        crta = false
-        hint('E', 'Pritisni <span>E</span> da udjes u apartman!')
-        if IsControlJustPressed(0, 38) then
-          TE('rev-apartmani:udji')
-        end
-      end
-    end
-
-    if spavanac then
-      Wait(1000)
-    end
-  end
-end)
-
-CT(function()
-  while true do
-    Wait(1)
-    local spavanac = true
-    local playerPed = PlayerPedId()
-    local korde = GetEntityCoords(playerPed)
-
-    for i = 1, #GlobalState.Apartmani do
-
-      if crta then
-        DrawMarker(30, GlobalState.Apartmani[i].izlazak, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, 50, 112, 207, 155, false, false, 2, false, false, false, false)
-      end
-
-      distanca = GetDistanceBetweenCoords(korde, GlobalState.Apartmani[i].izlazak, true)
-      if distanca <= 10.0 and distanca >= 2.0 then
-        spavanac = false
-        crta = true
-      elseif distanca <= 5 then
-        spavanac = false
-        crta = false
-        hint('E', 'Pritisni <span>E</span> da izadjes iz apartmana!')
-        if IsControlJustPressed(0, 38) then
-          TE('rev-apartmani:izadji')
-        end
-      end
-    end
-
-    if spavanac then
-      Wait(1000)
-    end
-  end
-end)
-
-CT(function()
-  while true do
-    Wait(1)
-    local spavanac = true
-    local playerPed = PlayerPedId()
-    local korde = GetEntityCoords(playerPed)
-
-    for i = 1, #GlobalState.Apartmani do
-
-      if crta then
-        DrawMarker(30, GlobalState.Apartmani[i].stash, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, 50, 112, 207, 155, false, false, 2, false, false, false, false)
-      end
-
-      distanca = GetDistanceBetweenCoords(korde, GlobalState.Apartmani[i].stash, true)
-      if distanca <= 10.0 and distanca >= 2.0 then
-        spavanac = false
-        crta = true
-      elseif distanca <= 5 then
-        spavanac = false
-        crta = false
-        hint('E', 'Pritisni <span>E</span> da otvoris stash!')
-        if IsControlJustPressed(0, 38) then
-          TE('rev-apartmani:stash')
-        end
-      end
-    end
-
-    if spavanac then
-      Wait(1000)
-    end
-  end
-end)
-
-
-RegisterNUICallback('kupiApartman', function(data)
-  TriggerServerEvent('rev-apartmani:kupiApartman', data.ime)
-end)
-
-RegisterNUICallback('close', function(data)
-  SetTimecycleModifier('default') 
-  SetNuiFocus(false, false)
-end)
-
-local zadnjiKey = 0
-AddEventHandler('rev-apartmani:udji', function ()
-  local playerPed = PlayerPedId()
-  local korde = GetEntityCoords(playerPed)
-  for i = 1, #GlobalState.Apartmani do
-    Wait(1)
-    distanca = GetDistanceBetweenCoords(korde, GlobalState.Apartmani[i].ulazak, true)
-    if distanca <= 5 then
-      key = i
-      zadnjiKey = i
-      ESX.TriggerServerCallback('rev-apartmani:getajApartman', function(bogic) 
-        if GlobalState.Apartmani[key].ime == bogic then
-          local id = GetPlayerServerId(NetworkGetEntityOwner(GetPlayerPed(-1)))
-          unutra = true
-          DoScreenFadeOut(300)
-          TSE('rev-apartmani:napraviBucket', id)
-          Wait(2300)
-          SetEntityCoords(PlayerPedId(), GlobalState.Apartmani[key].izlazak, 0, 0, 0, false)
-          DoScreenFadeIn(450)
-        else
-          ESX.ShowNotification('Moras kupiti ovaj apartman da bi mu pristupio!')
-        end
-      end)
-    end
-  end
-end)
-  
-AddEventHandler('rev-apartmani:izadji', function ()
-  unutra = false
-  DoScreenFadeOut(300)
-  TSE('rev-apartmani:resetujBucket')
-  Wait(2300)
-  SetEntityCoords(PlayerPedId(), -776.5603, 316.75546, 85.662643, 0, 0, 0, false)
-  DoScreenFadeIn(450)  
-
-end)
-
-AddEventHandler('rev-apartmani:stash', function ()
-    TE('ox_inventory:openInventory', 'stash', {id=LocalPlayer.state.identifikacija, owner = true})
-end)
-
-AddEventHandler('onResourceStop', function(resource)
-  TriggerServerEvent('rev-apartmani:resetujBucket')
-end)
-
-RegisterNetEvent('rev-apartmani:otvori')
-AddEventHandler("rev-apartmani:otvori", function()
-  SetTimecycleModifier('hud_def_blur') -- blur
-  SendNUIMessage({action = "open", apartmani = GlobalState.Apartmani})
-  SetNuiFocus(true, true)
+RegisterCommand("kupiApartman", function()
+  TriggerEvent('apartmani:otvoriMeni')
 end)
