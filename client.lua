@@ -50,6 +50,23 @@ CreateThread(function()
       distance = 2.0,
     })
 
+        exports['qtarget']:AddCircleZone('kupiApartman_' .. id, GlobalState.Kupi, 1.5, {
+      name = 'kupiApartman_' .. id,
+      debugPoly = false,
+      useZ = true,
+    }, {
+      options = {
+        {
+          icon = "fas fa-money-bill-wave",
+          label = "Kupi apartman",
+          action = function()
+            TriggerEvent('apartmani:otvoriMeni', data)
+          end
+        },
+      },
+      distance = 2.0,
+    })
+      
     exports['qtarget']:AddCircleZone('apartmanstash_' .. id, data.stash, 1.5, {
       name = 'apartmanstash_' .. id,
       debugPoly = false,
