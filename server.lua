@@ -75,6 +75,8 @@ RegisterServerEvent('apartmani:resetujBucket', function(data)
     SetPlayerRoutingBucket(source, 0)
 end)
 
+GlobalState.Kupi = vector3(-790.37, 308.04, 85.7)
+
 RegisterServerEvent('apartmani:kupiApartman', function(apartmanData, cijena)
     local xPlayer = ESX.GetPlayerFromId(source)
     local cid = xPlayer.identifier
